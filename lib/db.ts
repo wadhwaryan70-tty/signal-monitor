@@ -6,6 +6,7 @@ import "server-only";
 // Arjun's edits through update_arjun_fields(). See supabase/setup.sql for the column guard.
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { Sites, Workforce } from "./scoring";
 
 let client: SupabaseClient | null = null;
 
@@ -46,12 +47,17 @@ export interface Account {
   news_query: string | null;
   industry: string | null;
   hq_city: string | null;
+  frontline_workforce: Workforce | null;
+  shift_based: boolean;
+  site_count: Sites | null;
   stage: Stage;
   key_contact: string | null;
   arjun_notes: string | null;
   last_contact_date: string | null;
   relationship_read: string | null;
   sig_score: number;
+  sig_fit_score: number;
+  sig_priority: number;
   sig_status: SignalStatus;
   sig_top_type: SignalType | null;
   sig_summary: string | null;
@@ -75,18 +81,48 @@ export interface Article {
   strength: number;
   event_key: string | null;
   evidence: string | null;
+  people: Person[];
+}
+
+export type Persona = "decision_maker" | "champion" | "influencer";
+export interface Person {
+  name: string;
+  title: string;
+  persona: Persona;
+}
+
+export interface CommitteeMember extends Person {
+  source: "news" | "crm";
+  url?: string;
+  at?: string | null;
 }
 
 export interface HotListEntry {
   account_id: string;
   company_name: string;
   stage: Stage;
-  score: number;
+  score: number;       // readiness
+  fit: number;
+  priority: number;
   status: SignalStatus;
   summary: string;
   why_now: string | null;
   outreach_angle: string;
   sources: { title: string; url: string; source: string | null; published_at: string | null }[];
+  committee: CommitteeMember[];
+  last_contact_date: string | null;
+}
+
+export type AlertKind = "became_hot" | "warming" | "strong_signal" | "new_person" | "went_quiet";
+export interface Alert {
+  id: number;
+  account_id: string;
+  run_id: string | null;
+  created_at: string;
+  kind: AlertKind;
+  message: string;
+  priority: number;
+  url: string | null;
 }
 
 export interface Run {
@@ -108,17 +144,24 @@ export interface Run {
 
 // ---------- reads ----------
 
+const numeric = (r: Account): Account => ({
+  ...r,
+  sig_score: Number(r.sig_score),
+  sig_fit_score: Number(r.sig_fit_score),
+  sig_priority: Number(r.sig_priority),
+});
+
 export async function listAccounts(): Promise<Account[]> {
   const rows = check(
-    await db().from("accounts").select("*").order("sig_score", { ascending: false }).order("company_name"),
+    await db().from("accounts").select("*").order("sig_priority", { ascending: false }).order("sig_score", { ascending: false }).order("company_name"),
     "Load accounts",
   ) as Account[];
-  return rows.map((r) => ({ ...r, sig_score: Number(r.sig_score) }));
+  return rows.map(numeric);
 }
 
 export async function getAccount(id: string): Promise<Account | null> {
   const row = check(await db().from("accounts").select("*").eq("id", id).maybeSingle(), "Load account") as Account | null;
-  return row ? { ...row, sig_score: Number(row.sig_score) } : null;
+  return row ? numeric(row) : null;
 }
 
 export async function articlesFor(accountId: string, sinceIso: string): Promise<Article[]> {
@@ -146,12 +189,50 @@ export async function signalArticlesSince(sinceIso: string): Promise<Article[]> 
   ) as Article[];
 }
 
+export async function peopleArticles(accountIds: string[]): Promise<Article[]> {
+  if (!accountIds.length) return [];
+  return check(
+    await db().from("articles").select("*").in("account_id", accountIds).eq("about_company", true).neq("people", "[]"),
+    "Load named people",
+  ) as Article[];
+}
+
 export async function knownUrls(accountId: string): Promise<Set<string>> {
   const rows = check(
     await db().from("articles").select("url").eq("account_id", accountId),
     "Load known articles",
   ) as { url: string }[];
   return new Set(rows.map((r) => r.url));
+}
+
+export async function listAlerts(limit = 12): Promise<(Alert & { company_name: string })[]> {
+  const rows = check(
+    await db().from("alerts").select("*, accounts(company_name)").order("created_at", { ascending: false }).limit(limit),
+    "Load alerts",
+  ) as (Alert & { accounts: { company_name: string } | null })[];
+  return rows.map(({ accounts, ...a }) => ({ ...a, priority: Number(a.priority), company_name: accounts?.company_name ?? "?" }));
+}
+
+export async function insertAlerts(rows: Omit<Alert, "id" | "created_at">[]) {
+  if (!rows.length) return;
+  check(await db().from("alerts").insert(rows), "Save alerts");
+}
+
+/** Counts for the pipeline strip on the dashboard. */
+export async function pipelineStats(sinceIso: string) {
+  const head = { head: true, count: "exact" as const };
+  const [headlines, signals, people, alerts] = await Promise.all([
+    db().from("articles").select("id", head).gte("first_seen_at", sinceIso),
+    db().from("articles").select("id", head).gte("published_at", sinceIso).eq("about_company", true).neq("signal_type", "none"),
+    db().from("articles").select("id", head).eq("about_company", true).neq("people", "[]"),
+    db().from("alerts").select("id", head).gte("created_at", sinceIso),
+  ]);
+  return {
+    headlines: headlines.count ?? 0,
+    signals: signals.count ?? 0,
+    peopleMentions: people.count ?? 0,
+    alerts: alerts.count ?? 0,
+  };
 }
 
 export async function listRuns(limit = 10): Promise<Run[]> {
@@ -218,6 +299,8 @@ export async function insertArticles(rows: Omit<Article, "id" | "first_seen_at">
 
 export interface SignalPatch {
   score: number;
+  fit: number;
+  priority: number;
   status: SignalStatus;
   last_signal_at: string | null;
   events_14d: number;

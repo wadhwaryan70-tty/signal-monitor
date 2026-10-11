@@ -8,6 +8,13 @@ import { STAGE_LABEL } from "./product";
 const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
+/** Who to approach: the most senior person named in the news, else the CRM contact. */
+function approach(e: HotListEntry): string | null {
+  const m = e.committee[0];
+  if (!m) return null;
+  return m.source === "news" ? `${m.name} (${m.title})` : `your contact — ${m.title}`;
+}
+
 const istDate = (d = new Date()) =>
   d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", timeZone: "Asia/Kolkata" });
 
@@ -21,7 +28,7 @@ export function hotListText(list: HotListEntry[], appUrl: string): string {
     return `No account on your list had a new trigger event in the last 3 days. Nothing to chase — good week to deepen live pilots.\n\nDashboard: ${appUrl}`;
   const lines = list.map(
     (e, i) =>
-      `${i + 1}. ${e.company_name} (${STAGE_LABEL[e.stage]}) — score ${e.score}\n   Signal: ${e.summary}\n   Angle: ${e.outreach_angle || "—"}\n   Source: ${e.sources[0]?.url ?? "—"}`,
+      `${i + 1}. ${e.company_name} (${STAGE_LABEL[e.stage]}) — priority ${e.priority} (readiness ${e.score} × fit ${e.fit})\n   Signal: ${e.summary}\n   Angle: ${e.outreach_angle || "—"}${approach(e) ? `\n   Approach: ${approach(e)}` : ""}\n   Source: ${e.sources[0]?.url ?? "—"}`,
   );
   return `Accounts with the strongest trigger signals from the last 3 days:\n\n${lines.join("\n\n")}\n\nThese are drafts for your judgment — nothing has been sent to any account.\nDashboard: ${appUrl}`;
 }
@@ -32,10 +39,13 @@ export function hotListHtml(list: HotListEntry[], appUrl: string): string {
       (e, i) => `
   <tr><td style="padding:16px 0;border-top:1px solid #e7e5e4">
     <div style="font-size:16px;font-weight:600;color:#1c1917">${i + 1}. ${esc(e.company_name)}
-      <span style="font-weight:400;color:#78716c;font-size:13px">&nbsp;·&nbsp;${STAGE_LABEL[e.stage]}&nbsp;·&nbsp;score ${e.score}</span></div>
+      <span style="font-weight:400;color:#78716c;font-size:13px">&nbsp;·&nbsp;${STAGE_LABEL[e.stage]}</span>
+      <span style="float:right;font-size:12px;font-weight:600;color:#fff;background:#ea580c;border-radius:999px;padding:2px 9px">${e.priority}</span></div>
+    <div style="margin-top:2px;font-size:11px;color:#a8a29e;font-family:ui-monospace,monospace">priority = readiness ${e.score} × fit ${e.fit}</div>
     <div style="margin-top:6px;color:#1c1917"><b>Signal:</b> ${esc(e.summary)}</div>
     ${e.why_now ? `<div style="margin-top:4px;color:#44403c"><b>Why now:</b> ${esc(e.why_now)}</div>` : ""}
     <div style="margin-top:8px;padding:10px 12px;background:#fff7ed;border-left:3px solid #ea580c;color:#431407"><b>Outreach angle:</b> ${esc(e.outreach_angle || "—")}</div>
+    ${approach(e) ? `<div style="margin-top:6px;color:#44403c"><b>Approach:</b> ${esc(approach(e)!)}</div>` : ""}
     <div style="margin-top:6px;font-size:12px;color:#78716c">${e.sources
       .map((s) => `<a href="${esc(s.url)}" style="color:#57534e">${esc(s.source ?? "source")}: ${esc(s.title.slice(0, 90))}</a>`)
       .join("<br>")}</div>
@@ -43,7 +53,7 @@ export function hotListHtml(list: HotListEntry[], appUrl: string): string {
     )
     .join("");
   const body = list.length
-    ? `<p style="color:#44403c">Accounts with the strongest trigger signals from the last 3 days, strongest first.</p><table width="100%" cellspacing="0" cellpadding="0">${rows}</table>`
+    ? `<p style="color:#44403c">Accounts with the strongest trigger signals from the last 3 days, ranked by priority (readiness × fit × timing).</p><table width="100%" cellspacing="0" cellpadding="0">${rows}</table>`
     : `<p style="color:#44403c">No account on your list had a new trigger event in the last 3 days. Nothing to chase — a good week to deepen live pilots.</p>`;
   return `<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:14px;line-height:1.55;max-width:640px">
   <h2 style="margin:0 0 4px;color:#1c1917">🔥 Hot List — ${istDate()}</h2>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Account, HotListEntry } from "@/lib/db";
 import { STAGE_LABEL } from "@/lib/product";
 import { ago, daysSince, fmtIST } from "@/lib/ui";
+import { CommitteeChips } from "./Committee";
 import { CopyButton } from "./CopyButton";
 import { ArjunTag, ScoreRing, SignalChip, StatusPill, SystemTag } from "./ScoreRing";
 
@@ -14,7 +15,10 @@ export function HotCard({ entry, account, rank }: { entry: HotListEntry; account
           {String(rank).padStart(2, "0")}
         </div>
         <div className="relative flex items-start gap-4">
-          <ScoreRing score={entry.score} status={entry.status} />
+          <div className="flex flex-col items-center gap-1">
+            <ScoreRing score={entry.priority} status={entry.status} />
+            <span className="font-mono text-[9px] uppercase tracking-wider text-faint">priority</span>
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <Link href={`/accounts/${entry.account_id}`} className="font-serif text-[26px] leading-none text-text transition hover:text-hot">
@@ -27,6 +31,12 @@ export function HotCard({ entry, account, rank }: { entry: HotListEntry; account
               <SignalChip type={account?.sig_top_type ?? null} />
               <SystemTag />
               {account?.sig_last_signal_at && <span className="text-[11px] text-faint">signal {ago(account.sig_last_signal_at)}</span>}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-3 font-mono text-[11px] text-mute">
+              <span>readiness <b className="text-text">{entry.score}</b></span>
+              <span className="text-faint">×</span>
+              <span>fit <b className="text-text">{entry.fit}</b></span>
+              {lastContact !== null && lastContact <= 14 && <span className="text-faint">· spoke {lastContact}d ago</span>}
             </div>
           </div>
         </div>
@@ -46,6 +56,13 @@ export function HotCard({ entry, account, rank }: { entry: HotListEntry; account
               <CopyButton text={entry.outreach_angle} />
             </div>
             <p className="text-[14px] leading-relaxed text-text/90">{entry.outreach_angle}</p>
+          </div>
+        )}
+
+        {entry.committee.length > 0 && (
+          <div className="relative mt-4">
+            <div className="label mb-1.5">Buying committee</div>
+            <CommitteeChips members={entry.committee} />
           </div>
         )}
 

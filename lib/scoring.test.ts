@@ -66,3 +66,25 @@ describe("scoring", () => {
     expect(scoreEvents([])).toBe(0);
   });
 });
+
+import { fitScore, priorityScore, timingFactor } from "./scoring";
+
+describe("fit and priority", () => {
+  it("scores a big multi-site shift workforce in a core vertical as a perfect fit", () => {
+    expect(fitScore({ frontline_workforce: "20k+", shift_based: true, site_count: "100+", industry: "Logistics" })).toBe(100);
+    expect(fitScore({ frontline_workforce: "1k-5k", shift_based: false, site_count: "1-10", industry: "E-commerce" })).toBe(35);
+    expect(fitScore({ frontline_workforce: null, shift_based: false, site_count: null, industry: null })).toBe(0);
+  });
+
+  it("lets a strong-fit account outrank a slightly hotter weak-fit one", () => {
+    expect(priorityScore(50, 100, null)).toBeGreaterThan(priorityScore(60, 30, null));
+  });
+
+  it("discounts accounts Arjun has just spoken to", () => {
+    expect(timingFactor(1)).toBe(0.75);
+    expect(timingFactor(10)).toBe(0.9);
+    expect(timingFactor(40)).toBe(1);
+    expect(timingFactor(null)).toBe(1);
+    expect(priorityScore(80, 100, 2)).toBe(60);
+  });
+});

@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { AccountTable } from "@/components/AccountTable";
+import { AlertFeed } from "@/components/AlertFeed";
+import { PipelineStrip } from "@/components/PipelineStrip";
 import { HotCard } from "@/components/HotCard";
 import { Nav } from "@/components/Nav";
 import { Radar } from "@/components/Radar";
 import { ScanControls } from "@/components/ScanControls";
-import { listAccounts, listRuns, type Account, type Run } from "@/lib/db";
+import { listAccounts, listAlerts, listRuns, pipelineStats, type Account, type Run } from "@/lib/db";
+import { livePriority } from "@/lib/scoring";
 import { buildHotList } from "@/lib/pipeline";
 import { isSignedIn } from "@/lib/session";
 import { ago, fmtIST, nextScheduledRun, STATUS } from "@/lib/ui";
@@ -29,9 +32,18 @@ export default async function Home() {
   let accounts: Account[] = [];
   let runs: Run[] = [];
   let hot: Awaited<ReturnType<typeof buildHotList>> = [];
+  let alerts: Awaited<ReturnType<typeof listAlerts>> = [];
+  let stats = { headlines: 0, signals: 0, peopleMentions: 0, alerts: 0 };
   let error: string | null = null;
   try {
-    [accounts, runs, hot] = await Promise.all([listAccounts(), listRuns(5), buildHotList()]);
+    [accounts, runs, hot, alerts, stats] = await Promise.all([
+      listAccounts(),
+      listRuns(5),
+      buildHotList(),
+      listAlerts(10),
+      pipelineStats(new Date(Date.now() - 14 * 86_400_000).toISOString()),
+    ]);
+    accounts.sort((a, b) => livePriority(b) - livePriority(a) || b.sig_score - a.sig_score);
   } catch (e) {
     error = e instanceof Error ? e.message : "Could not load data.";
   }
@@ -113,11 +125,29 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* ── The four stages, live ──────────────────────── */}
+        <section className="grid gap-4 lg:grid-cols-[1fr_380px]">
+          <div>
+            <div className="label mb-3">How this week&apos;s radar was built</div>
+            <PipelineStrip
+              stats={[
+                { metric: `${accounts.length} + ${stats.headlines}`, label: "CRM accounts + live headlines (14 days)" },
+                { metric: `${stats.signals}`, label: `trigger signals · ${stats.peopleMentions} committee mentions` },
+                { metric: `${accounts.filter((a) => a.sig_score > 0).length}/${accounts.length}`, label: "accounts with live readiness" },
+                { metric: `${hot.length}`, label: `on the Hot List · ${stats.alerts} CRM alerts` },
+              ]}
+            />
+          </div>
+          <div className="lg:pt-7">
+            <AlertFeed alerts={alerts} />
+          </div>
+        </section>
+
         {/* ── Hot List ───────────────────────────────────── */}
-        <section className="mt-4">
+        <section className="mt-14">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <div className="label">This week&apos;s Hot List</div>
+              <div className="label">This week&apos;s Hot List · ranked by priority</div>
               <h2 className="mt-1 font-serif text-[34px] leading-none text-text">Strongest signals from the last 3 days</h2>
             </div>
             <Link href="/hot-list" className="text-[13px] text-mute transition hover:text-hot">Preview the email →</Link>
@@ -144,11 +174,11 @@ export default async function Home() {
         <section className="mt-14">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <div className="label">All accounts · ranked by signal</div>
+              <div className="label">All accounts · ranked by priority</div>
               <h2 className="mt-1 font-serif text-[34px] leading-none text-text">The whole book</h2>
             </div>
             <p className="max-w-md text-[12px] text-faint">
-              Scores halve every 3 days without new signals, so accounts that go quiet sink on their own.
+              Priority = readiness × fit × timing. Readiness halves every 3 days without new signals, so accounts that go quiet sink on their own.
             </p>
           </div>
           <AccountTable accounts={accounts} />

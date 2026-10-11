@@ -19,7 +19,7 @@ const MAP = [
     k: "Input",
     c: "#ffb020",
     title: "Accounts + live news",
-    lines: ["Arjun's accounts table (Supabase)", "Google News RSS, India edition — 2 searches/account, last 14 days"],
+    lines: ["Internal: Arjun's CRM in Supabase — stage, firmographics, last contact", "External: Google News RSS, India edition — 2 searches/account, last 14 days"],
   },
   {
     k: "Context",
@@ -31,19 +31,64 @@ const MAP = [
     k: "Processing",
     c: "#34d399",
     title: "Clean, dedupe, score",
-    lines: ["Drop seen links & near-duplicate headlines", "Group same-event articles", `Score = strength × weight × ½^(age/${HALF_LIFE_DAYS}d), top 3`, "Fingerprint Arjun's columns before/after"],
+    lines: ["Drop seen links & near-duplicate headlines", "Group same-event articles into one event", `Readiness = strength × weight × ½^(age/${HALF_LIFE_DAYS}d), top 3`, "Priority = readiness × fit × timing", "Fingerprint Arjun's columns before/after"],
   },
   {
     k: "AI",
     c: "#5b8def",
     title: "Gemini Flash",
-    lines: ["Classify each new headline: type, strength 0–5, same-event key", "Write one-line summary + why now", "Draft outreach angle: trigger → capability, tuned to stage"],
+    lines: ["Classify each new headline: type, strength 0–5, same-event key", "Name the buying committee: decision-makers, champions, influencers", "Write one-line summary + why now", "Draft outreach angle: trigger → capability, tuned to stage"],
   },
   {
     k: "Output",
     c: "#c084fc",
     title: "Hot List + radar",
-    lines: ["sig_ columns only, via apply_signal_update()", "Hot List email (Resend): top 10, last 3 days", "Dashboard, account pages, run log"],
+    lines: ["CRM write-back: sig_ columns only, via apply_signal_update()", "CRM alert feed: became hot, strong signal, new person, went quiet", "Hot List email (Resend): top 10 by priority, last 3 days", "Dashboard, account pages, run log"],
+  },
+];
+
+const STAGES: { n: string; title: string; color: string; points: string[]; not?: string }[] = [
+  {
+    n: "01",
+    title: "Data collection",
+    color: "#ffb020",
+    points: [
+      "Internal: Arjun's CRM (Supabase) — account stage, firmographics (frontline workforce, shift-based, sites), last-contact date, his read on the relationship.",
+      "External: live Google News for every account, two searches each (plain + trigger words), India edition, last 14 days.",
+    ],
+    not: "website analytics and product-usage feeds — Arjun has none, and the system never invents data.",
+  },
+  {
+    n: "02",
+    title: "AI processing & grouping",
+    color: "#5b8def",
+    points: [
+      "Gemini Flash classifies every new headline into one of five trigger types with a 0–5 strength — or rejects it as noise or a different company.",
+      "Articles reporting the same event are merged into one account-level event, so ten outlets covering one funding round count once.",
+      "The buying committee is pulled out of the news — named CHROs, ops heads, plant heads — and grouped into decision-makers, champions and influencers next to Arjun's CRM contact.",
+    ],
+    not: "unmasking anonymous web visitors — there's no website traffic to unmask, and reverse-IP identification needs paid data and privacy consent.",
+  },
+  {
+    n: "03",
+    title: "Scoring & prioritisation",
+    color: "#ff5a36",
+    points: [
+      `Readiness: how strong and how fresh the triggers are — halves every ${HALF_LIFE_DAYS} days, so quiet accounts sink automatically.`,
+      "Fit: how well the account matches the product — frontline scale, shift work, site count, core vertical.",
+      "Priority = readiness × fit × timing (eased if Arjun spoke to them in the last few days). The Hot List is ranked by priority.",
+    ],
+  },
+  {
+    n: "04",
+    title: "Automated action",
+    color: "#34d399",
+    points: [
+      "Signal columns are written back into Arjun's CRM table on every scan — never his own columns.",
+      "A CRM alert feed records what changed: became hot, strong new signal, new decision-maker named, went quiet.",
+      "Mon & Thu 07:30 IST the Hot List email lands in his inbox: top 10 by priority, one-line signal, Gemini-drafted angle, who to approach.",
+    ],
+    not: "auto-sending outreach — Arjun decides and writes; the system only emails Arjun.",
   },
 ];
 
@@ -74,8 +119,28 @@ export default async function HowItWorks() {
           Timing is the product. <span className="italic text-mute">Here is how the system finds the moment.</span>
         </h1>
 
-        {/* Components Map */}
+        {/* Four stages */}
         <section className="mt-12">
+          <div className="label mb-4">The four stages</div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {STAGES.map((st) => (
+              <div key={st.n} className="glass relative overflow-hidden rounded-2xl p-6">
+                <div className="absolute inset-y-0 left-0 w-[3px]" style={{ background: st.color, boxShadow: `0 0 16px ${st.color}` }} />
+                <div className="flex items-baseline gap-3">
+                  <span className="font-mono text-[12px]" style={{ color: st.color }}>{st.n}</span>
+                  <h3 className="font-serif text-[26px] leading-none text-text">{st.title}</h3>
+                </div>
+                <ul className="mt-4 space-y-2 text-[13px] leading-relaxed text-mute">
+                  {st.points.map((pt) => <li key={pt} className="flex gap-2"><span style={{ color: st.color }}>›</span><span>{pt}</span></li>)}
+                </ul>
+                {st.not && <p className="mt-3 border-t border-line pt-3 text-[12px] text-faint"><span className="text-mute">Not built:</span> {st.not}</p>}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Components Map */}
+        <section className="mt-16">
           <div className="label mb-4">Components map</div>
           <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
             {MAP.map((m, i) => (
@@ -124,7 +189,9 @@ export default async function HowItWorks() {
             <div className="label">Scoring — deterministic, explainable</div>
             <div className="mt-4 rounded-xl bg-black/40 p-4 font-mono text-[13px] text-text">
               points = strength<span className="text-faint">(1–5)</span> × weight × ½<sup>age ÷ {HALF_LIFE_DAYS} days</sup>
-              <br />score&nbsp; = sum of top 3 events, scaled 0–100
+              <br />readiness = sum of top 3 events, scaled 0–100
+              <br />fit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= workforce + shift + sites + vertical <span className="text-faint">(0–100)</span>
+              <br />priority&nbsp; = readiness × (0.5 + fit/200) × timing
             </div>
             <table className="mt-4 w-full text-[12.5px]">
               <tbody>
@@ -152,6 +219,14 @@ export default async function HowItWorks() {
               <div>
                 <div className="font-serif text-[22px] text-text">✂ Auto-sending outreach</div>
                 <p className="mt-1 text-[13px] leading-relaxed text-mute">The system drafts the angle; Arjun decides and writes. Relationship judgment — and the risk of a tone-deaf AI email to a CHRO — stays with the human. The only email the system sends goes to Arjun.</p>
+              </div>
+              <div>
+                <div className="font-serif text-[22px] text-text">✂ Unmasking anonymous web traffic</div>
+                <p className="mt-1 text-[13px] leading-relaxed text-mute">Intent platforms de-anonymise website visitors by IP. Arjun has no visitor data to unmask, and doing it needs paid providers and consent under India&apos;s DPDP Act. Named people in public news give the buying-committee view without surveillance.</p>
+              </div>
+              <div>
+                <div className="font-serif text-[22px] text-text">✂ Salesforce / HubSpot / Outreach sync</div>
+                <p className="mt-1 text-[13px] leading-relaxed text-mute">Arjun&apos;s CRM is his Supabase table, so alerts and signals are written there. A connector to another CRM would be the same write behind a different API.</p>
               </div>
               <div>
                 <div className="font-serif text-[22px] text-text">✂ Reading full articles</div>

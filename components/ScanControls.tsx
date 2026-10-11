@@ -23,6 +23,7 @@ interface Result {
   newSignals: number;
   manualUntouched: boolean;
   hotList: number;
+  alerts: number;
   email: { status: string; detail: string };
   errors: string[];
 }
@@ -111,6 +112,7 @@ export function ScanControls({ signedIn }: { signedIn: boolean }) {
             <span><b className="text-text">{result.fresh}</b> new → Gemini</span>
             <span><b className="text-text">{result.newSignals}</b> new signals</span>
             <span><b className="text-text">{result.hotList}</b> on the Hot List</span>
+            <span><b className="text-text">{result.alerts}</b> CRM alerts</span>
           </div>
           <div className="mt-1.5 flex flex-wrap gap-x-4">
             <span className={result.manualUntouched ? "text-good" : "text-hot"}>

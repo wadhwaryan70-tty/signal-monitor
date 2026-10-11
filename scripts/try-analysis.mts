@@ -13,5 +13,6 @@ for (const name of names) {
   const s = summariseAccount(scored);
   console.log(`\n=== ${name}: ${news.length} articles, score ${s.score} (${s.status}), ${s.events.length} events, ${((Date.now() - t) / 1000).toFixed(1)}s`);
   for (const x of scored.filter((x) => x.signal_type !== "none")) console.log(`  [${x.published_at?.slice(0, 10)}] ${x.signal_type}/${x.strength} ${x.about_company ? "" : "(OFF-TOPIC)"} ${x.event_key} — ${x.title.slice(0, 100)}`);
+  console.log("  people:", JSON.stringify(scored.flatMap((x) => x.people ?? [])));
   console.log("  summary:", a.summary, "\n  why:", a.why_now, "\n  angle:", a.outreach_angle);
 }

@@ -7,7 +7,7 @@
 // Several articles about the same event (same event_key) count once, at their strongest.
 // Accounts with no fresh events decay toward 0 on every run, so quiet accounts sink on their own.
 
-import type { SignalStatus, SignalType } from "./db";
+import type { Person, SignalStatus, SignalType } from "./db";
 
 export const HALF_LIFE_DAYS = 3;
 export const HOT_WINDOW_DAYS = 3;
@@ -35,6 +35,7 @@ export interface ScoredArticle {
   strength: number;
   event_key: string | null;
   evidence: string | null;
+  people?: Person[];
 }
 
 export interface SignalEvent {
@@ -99,3 +100,63 @@ export function summariseAccount(articles: ScoredArticle[], now = Date.now()) {
     topType: events[0]?.type ?? null,
   };
 }
+
+// ── Fit (how well the account matches the product) ─────────────────────────────
+// From Arjun's own CRM firmographics. Max 100.
+
+export type Workforce = "<1k" | "1k-5k" | "5k-20k" | "20k+";
+export type Sites = "1-10" | "10-100" | "100+";
+
+export const FIT_POINTS = {
+  workforce: { "<1k": 10, "1k-5k": 20, "5k-20k": 30, "20k+": 40 } as Record<Workforce, number>,
+  shift: 25,
+  sites: { "1-10": 5, "10-100": 15, "100+": 25 } as Record<Sites, number>,
+  coreVertical: 10,
+};
+
+/** Industries where frontline, shift-based work is the norm. */
+const CORE_VERTICALS = /logistic|commerce|delivery|retail|grocery|health|hospital|manufactur|staffing|facilit|food|warehous/i;
+
+export interface FitInputs {
+  frontline_workforce: Workforce | null;
+  shift_based: boolean;
+  site_count: Sites | null;
+  industry: string | null;
+}
+
+export function fitBreakdown(a: FitInputs) {
+  const parts = {
+    workforce: a.frontline_workforce ? FIT_POINTS.workforce[a.frontline_workforce] : 0,
+    shift: a.shift_based ? FIT_POINTS.shift : 0,
+    sites: a.site_count ? FIT_POINTS.sites[a.site_count] : 0,
+    vertical: a.industry && CORE_VERTICALS.test(a.industry) ? FIT_POINTS.coreVertical : 0,
+  };
+  return { ...parts, total: parts.workforce + parts.shift + parts.sites + parts.vertical };
+}
+
+export const fitScore = (a: FitInputs) => fitBreakdown(a).total;
+
+// ── Priority (who to contact first) ────────────────────────────────────────────
+//   priority = readiness × fit factor × timing factor
+//   fit factor    = 0.5 + 0.5 × fit/100        → a perfect-fit account keeps its full readiness, a poor fit loses up to half
+//   timing factor = from Arjun's last-contact date: he just spoke to them → less urgent to act on the signal
+
+export function timingFactor(daysSinceContact: number | null): number {
+  if (daysSinceContact === null) return 1;
+  if (daysSinceContact <= 3) return 0.75;
+  if (daysSinceContact <= 14) return 0.9;
+  return 1;
+}
+
+export function priorityScore(readiness: number, fit: number, daysSinceContact: number | null): number {
+  const p = readiness * (0.5 + 0.5 * Math.min(100, fit) / 100) * timingFactor(daysSinceContact);
+  return Math.round(Math.min(100, p) * 10) / 10;
+}
+
+export function daysSinceDate(date: string | null, now = Date.now()): number | null {
+  return date ? Math.max(0, Math.floor((now - Date.parse(date)) / 86_400_000)) : null;
+}
+
+/** Live priority: readiness × fit × timing, using Arjun's current last-contact date. */
+export const livePriority = (a: FitInputs & { sig_score: number; last_contact_date: string | null }, now = Date.now()) =>
+  priorityScore(a.sig_score, fitScore(a), daysSinceDate(a.last_contact_date, now));
