@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+/* Signal Monitor design system.
+   Two materials, on purpose:
+   • "Instrument" — dark glass, mono labels, heat colours. Everything the SYSTEM found.
+   • "Notebook"   — cream paper, handwriting. Everything ARJUN wrote. The system never writes here. */
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif-display);
+  --font-hand: var(--font-hand);
+
+  --color-ink: #07090c;
+  --color-panel: #0e1217;
+  --color-panel-2: #141a21;
+  --color-line: #1f2731;
+  --color-line-2: #2a3542;
+  --color-text: #e8edf2;
+  --color-mute: #8a96a3;
+  --color-faint: #56616d;
+
+  --color-hot: #ff5a36;
+  --color-warm: #ffb020;
+  --color-cool: #5b8def;
+  --color-quiet: #4b5563;
+  --color-good: #34d399;
+
+  --color-paper: #f6efdc;
+  --color-paper-2: #ede3c8;
+  --color-paper-ink: #2b2418;
+  --color-paper-line: #d9cba6;
+}
+
+html { color-scheme: dark; }
+
+body {
+  background: var(--color-ink);
+  color: var(--color-text);
+  background-image:
+    radial-gradient(1200px 600px at 85% -10%, rgba(255, 90, 54, 0.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(91, 141, 239, 0.08), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* faint instrument grid behind everything */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at 50% 0%, black 30%, transparent 75%);
+  z-index: -1;
+}
+
+.glass {
+  background: linear-gradient(180deg, rgba(20, 26, 33, 0.85), rgba(14, 18, 23, 0.85));
+  border: 1px solid var(--color-line);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 20px 40px -24px rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+}
+
+.label {
+  font-family: var(--font-geist-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-mute);
+}
+
+/* Arjun's notebook: ruled paper */
+.paper {
+  background-color: var(--color-paper);
+  color: var(--color-paper-ink);
+  background-image:
+    linear-gradient(90deg, transparent 27px, rgba(220, 80, 60, 0.35) 27px, rgba(220, 80, 60, 0.35) 28px, transparent 28px),
+    repeating-linear-gradient(180deg, transparent 0 25px, var(--color-paper-line) 25px 26px);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 12px 30px -12px rgba(0,0,0,0.55);
+}
+.paper-flat {
+  background-color: var(--color-paper);
+  color: var(--color-paper-ink);
+}
+.hand { font-family: var(--font-hand); }
+
+/* radar sweep */
+@keyframes sweep { to { transform: rotate(360deg); } }
+.radar-sweep {
+  transform-origin: 50% 50%;
+  animation: sweep 6s linear infinite;
+  background: conic-gradient(from 0deg, rgba(255, 90, 54, 0.28), rgba(255, 90, 54, 0) 70deg, transparent 360deg);
+}
+@keyframes ping { 0% { transform: scale(1); opacity: .7 } 100% { transform: scale(2.6); opacity: 0 } }
+.ping { animation: ping 2.2s cubic-bezier(0, 0, .2, 1) infinite; transform-origin: center; transform-box: fill-box; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+.rise { animation: rise .5s cubic-bezier(.2,.7,.2,1) both; }
+
+@keyframes shimmer { from { background-position: -200% 0 } to { background-position: 200% 0 } }
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-sweep, .ping, .rise, .shimmer { animation: none !important; }
+}
+
+::selection { background: rgba(255, 90, 54, 0.35); }
