@@ -46,7 +46,7 @@ export function AccountTable({ accounts }: { accounts: Account[] }) {
               const s = STATUS[a.sig_status];
               const contactDays = daysSince(a.last_contact_date);
               return (
-                <tr key={a.id} className={`group border-b border-line/70 transition hover:bg-white/[0.025] ${a.sig_status === "quiet" ? "opacity-70" : ""}`}>
+                <tr key={a.id} className={`group border-b border-line/70 transition hover:bg-white/[0.025] ${a.sig_status === "quiet" ? "[&>td:not(.paper-flat)]:opacity-60" : ""}`}>
                   <td className="px-4 py-3 font-mono text-[12px] text-faint">{i + 1}</td>
                   <td className="px-2 py-3">
                     <Link href={`/accounts/${a.id}`} className="font-medium text-text transition group-hover:text-hot">

@@ -1,10 +1,22 @@
 import Link from "next/link";
 import type { Account, HotListEntry } from "@/lib/db";
 import { STAGE_LABEL } from "@/lib/product";
-import { ago, daysSince, fmtIST } from "@/lib/ui";
+import { ago, daysSince, fmtIST, sourceName } from "@/lib/ui";
+import { bestApproach } from "@/lib/committee";
 import { CommitteeChips } from "./Committee";
 import { CopyButton } from "./CopyButton";
 import { ArjunTag, ScoreRing, SignalChip, StatusPill, SystemTag } from "./ScoreRing";
+
+function approachLine(entry: HotListEntry) {
+  const m = bestApproach(entry.committee);
+  if (!m) return null;
+  return (
+    <div className="mt-2 text-[12.5px] text-mute">
+      <span className="label mr-2 !text-good">Approach</span>
+      {m.source === "news" ? `${m.name}, ${m.title}` : `your contact — ${m.title}`}
+    </div>
+  );
+}
 
 export function HotCard({ entry, account, rank }: { entry: HotListEntry; account: Account | undefined; rank: number }) {
   const lastContact = daysSince(account?.last_contact_date);
@@ -34,7 +46,7 @@ export function HotCard({ entry, account, rank }: { entry: HotListEntry; account
             </div>
             <div className="mt-2 flex flex-wrap gap-3 font-mono text-[11px] text-mute">
               <span>readiness <b className="text-text">{entry.score}</b></span>
-              <span className="text-faint">×</span>
+              <span className="text-faint">·</span>
               <span>fit <b className="text-text">{entry.fit}</b></span>
               {lastContact !== null && lastContact <= 14 && <span className="text-faint">· spoke {lastContact}d ago</span>}
             </div>
@@ -63,6 +75,7 @@ export function HotCard({ entry, account, rank }: { entry: HotListEntry; account
           <div className="relative mt-4">
             <div className="label mb-1.5">Buying committee</div>
             <CommitteeChips members={entry.committee} />
+            {approachLine(entry)}
           </div>
         )}
 
@@ -71,7 +84,7 @@ export function HotCard({ entry, account, rank }: { entry: HotListEntry; account
             {entry.sources.map((s) => (
               <li key={s.url} className="truncate text-[12px]">
                 <a href={s.url} target="_blank" rel="noreferrer" className="text-faint transition hover:text-text">
-                  <span className="font-mono text-mute">{s.source ?? "source"}</span> · {s.title}
+                  <span className="font-mono text-mute">{sourceName(s.source)}</span> · {s.title}
                   <span className="text-faint"> · {fmtIST(s.published_at, false)}</span> ↗
                 </a>
               </li>
@@ -96,6 +109,15 @@ export function HotCard({ entry, account, rank }: { entry: HotListEntry; account
           <div className="font-mono text-[10px] uppercase tracking-wider text-paper-ink/50">My read</div>
           <div className="hand text-[20px] leading-[26px]">{account?.relationship_read ?? "—"}</div>
         </div>
+        {account?.arjun_notes && (
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-paper-ink/50">Notes</div>
+            <div className="hand line-clamp-6 text-[19px] leading-[26px] text-paper-ink/85">{account.arjun_notes}</div>
+          </div>
+        )}
+        <Link href={`/accounts/${entry.account_id}`} className="mt-auto pt-2 font-mono text-[10.5px] uppercase tracking-wider text-paper-ink/50 hover:text-paper-ink">
+          Open account →
+        </Link>
       </aside>
     </article>
   );

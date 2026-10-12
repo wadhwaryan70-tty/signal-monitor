@@ -56,3 +56,16 @@ export function nextScheduledRun(now = new Date()): Date {
 }
 
 export const fmtScore = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+
+/** Publisher names sometimes arrive as bare URLs; show just the domain. */
+export function sourceName(source: string | null | undefined): string {
+  if (!source) return "source";
+  if (/^https?:\/\//.test(source)) {
+    try {
+      return new URL(source).hostname.replace(/^www\./, "");
+    } catch {
+      return source;
+    }
+  }
+  return source;
+}

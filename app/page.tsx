@@ -68,8 +68,9 @@ export default async function Home() {
             <h1 className="mt-4 font-serif text-[44px] leading-[1.02] tracking-tight text-text sm:text-[64px]">
               {hot.length ? (
                 <>
-                  <span className="italic text-hot">{hot.length} account{hot.length === 1 ? "" : "s"}</span> {hot.length === 1 ? "is" : "are"} worth
-                  <br className="hidden sm:block" /> a call this week.
+                  <span className="italic text-hot">{hot.length} account{hot.length === 1 ? "" : "s"}</span> {hot.length === 1 ? "has" : "have"} a fresh
+                  <br className="hidden sm:block" /> trigger.{" "}
+                  <span className="text-mute">{count("hot") || "None"} {count("hot") === 1 ? "is" : "are"} hot.</span>
                 </>
               ) : lastRun ? (
                 <>Quiet week. <span className="italic text-mute">No fresh triggers.</span></>
@@ -138,8 +139,10 @@ export default async function Home() {
               ]}
             />
           </div>
-          <div className="lg:pt-7">
-            <AlertFeed alerts={alerts} />
+          <div className="relative min-h-[320px] lg:mt-7">
+            <div className="lg:absolute lg:inset-0">
+              <AlertFeed alerts={alerts} />
+            </div>
           </div>
         </section>
 

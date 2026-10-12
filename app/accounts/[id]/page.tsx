@@ -21,7 +21,7 @@ import {
   TYPE_WEIGHT,
 } from "@/lib/scoring";
 import { isSignedIn } from "@/lib/session";
-import { ago, fmtIST, STATUS } from "@/lib/ui";
+import { ago, fmtIST, sourceName, STATUS } from "@/lib/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -144,7 +144,7 @@ export default async function AccountPage({ params }: PageProps<"/accounts/[id]"
             <section className="glass rounded-2xl p-6">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="label">Why readiness is {account.sig_score}</span>
-                <span className="font-mono text-[11px] text-faint">points = strength × type weight × ½^(age ÷ {HALF_LIFE_DAYS}d) · top 3 events · scaled to 100</span>
+                <span className="font-mono text-[11px] text-faint">points = strength × type weight × ½^(age ÷ {HALF_LIFE_DAYS}d) · top 3 events × 10</span>
               </div>
               {events.length ? (
                 <ol className="mt-4 space-y-3">
@@ -169,7 +169,7 @@ export default async function AccountPage({ params }: PageProps<"/accounts/[id]"
                           {e.articles.map((a) => (
                             <li key={a.url} className="truncate text-[12px]">
                               <a href={a.url} target="_blank" rel="noreferrer" className="text-faint transition hover:text-text">
-                                <span className="font-mono text-mute">{a.source}</span> · {a.title} · {fmtIST(a.published_at, false)} ↗
+                                <span className="font-mono text-mute">{sourceName(a.source)}</span> · {a.title} · {fmtIST(a.published_at, false)} ↗
                               </a>
                             </li>
                           ))}
@@ -195,7 +195,7 @@ export default async function AccountPage({ params }: PageProps<"/accounts/[id]"
                 {noise.map((a) => (
                   <li key={a.url} className="truncate text-[12px]">
                     <a href={a.url} target="_blank" rel="noreferrer" className="text-faint hover:text-mute">
-                      {fmtIST(a.published_at, false)} · {a.title} <span className="font-mono">— {a.source}</span>
+                      {fmtIST(a.published_at, false)} · {a.title} <span className="font-mono">— {sourceName(a.source)}</span>
                       {!a.about_company && <span className="text-warm"> (not about this company)</span>}
                     </a>
                   </li>

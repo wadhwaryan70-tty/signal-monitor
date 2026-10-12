@@ -1,7 +1,7 @@
 import { GuardTest } from "@/components/GuardTest";
 import { Nav } from "@/components/Nav";
 import { listRuns, type Run } from "@/lib/db";
-import { HALF_LIFE_DAYS, TYPE_WEIGHT } from "@/lib/scoring";
+import { COOLING_AT, HALF_LIFE_DAYS, HOT_AT, TYPE_WEIGHT, WARM_AT } from "@/lib/scoring";
 import { SIGNAL_LABEL } from "@/lib/product";
 import { isSignedIn } from "@/lib/session";
 import { fmtIST } from "@/lib/ui";
@@ -189,7 +189,7 @@ export default async function HowItWorks() {
             <div className="label">Scoring — deterministic, explainable</div>
             <div className="mt-4 rounded-xl bg-black/40 p-4 font-mono text-[13px] text-text">
               points = strength<span className="text-faint">(1–5)</span> × weight × ½<sup>age ÷ {HALF_LIFE_DAYS} days</sup>
-              <br />readiness = sum of top 3 events, scaled 0–100
+              <br />readiness = top 3 events × 10, capped at 100
               <br />fit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= workforce + shift + sites + vertical <span className="text-faint">(0–100)</span>
               <br />priority&nbsp; = readiness × (0.5 + fit/200) × timing
             </div>
@@ -204,8 +204,8 @@ export default async function HowItWorks() {
               </tbody>
             </table>
             <ul className="mt-4 space-y-1 text-[12.5px] text-mute">
-              <li><span className="text-hot">Hot</span> — score ≥ 40 and a signal in the last 3 days</li>
-              <li><span className="text-warm">Warm</span> — score ≥ 15 · <span className="text-cool">Cooling</span> — ≥ 3 · <span className="text-faint">Quiet</span> — below</li>
+              <li><span className="text-hot">Hot</span> — readiness ≥ {HOT_AT} and a signal in the last 3 days</li>
+              <li><span className="text-warm">Warm</span> — ≥ {WARM_AT} · <span className="text-cool">Cooling</span> — ≥ {COOLING_AT} · <span className="text-faint">Quiet</span> — below</li>
               <li>Gemini only classifies; the ranking is arithmetic. A 4-day-old signal is worth half a fresh one — quiet accounts sink without anyone touching them.</li>
             </ul>
           </div>

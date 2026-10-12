@@ -2,7 +2,7 @@
 // so Arjun can see exactly why an account ranks where it does.
 //
 //   event points = strength (1–5) × type weight × recency decay      (decay halves every 3 days)
-//   score        = sum of the 3 strongest events, scaled to 0–100
+//   score        = sum of the 3 strongest events × 10, capped at 100
 //
 // Several articles about the same event (same event_key) count once, at their strongest.
 // Accounts with no fresh events decay toward 0 on every run, so quiet accounts sink on their own.
@@ -21,8 +21,12 @@ export const TYPE_WEIGHT: Record<Exclude<SignalType, "none">, number> = {
   digitalisation: 0.8,
 };
 
-// Three fresh, strongest-possible leadership events would score 18; 15 points already maps to 100.
-const SCALE = 100 / 15;
+// One fresh, strongest-possible trigger (a new CHRO today: 5 × 1.2 = 6 points) scores 60 — hot on its own.
+// Two or three strong fresh events reach 100.
+const SCALE = 100 / 10;
+export const HOT_AT = 45;
+export const WARM_AT = 20;
+export const COOLING_AT = 5;
 
 export interface ScoredArticle {
   url: string;
@@ -80,9 +84,9 @@ export function hasFreshEvent(events: SignalEvent[], now = Date.now()): boolean 
 }
 
 export function statusFor(score: number, fresh: boolean): SignalStatus {
-  if (score >= 40 && fresh) return "hot";
-  if (score >= 15) return "warm";
-  if (score >= 3) return "cooling";
+  if (score >= HOT_AT && fresh) return "hot";
+  if (score >= WARM_AT) return "warm";
+  if (score >= COOLING_AT) return "cooling";
   return "quiet";
 }
 

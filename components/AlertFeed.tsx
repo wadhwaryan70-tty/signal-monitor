@@ -12,13 +12,13 @@ const KIND = {
 
 export function AlertFeed({ alerts }: { alerts: (Alert & { company_name: string })[] }) {
   return (
-    <div className="glass flex h-full flex-col rounded-2xl">
+    <div className="glass flex h-full max-h-[420px] flex-col overflow-hidden rounded-2xl lg:max-h-none">
       <div className="flex items-center justify-between border-b border-line px-5 py-3">
         <span className="label">CRM alert feed</span>
         <span className="font-mono text-[10px] text-faint">written to Supabase · alerts table</span>
       </div>
       {alerts.length ? (
-        <ul className="divide-y divide-line/70 overflow-y-auto">
+        <ul className="min-h-0 flex-1 divide-y divide-line/70 overflow-y-auto [scrollbar-color:#2a3542_transparent] [scrollbar-width:thin]">
           {alerts.map((a) => {
             const k = KIND[a.kind];
             return (

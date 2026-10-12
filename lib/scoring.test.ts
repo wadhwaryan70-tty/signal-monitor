@@ -51,8 +51,9 @@ describe("scoring", () => {
     const fresh = summariseAccount(a, NOW);
     const later = summariseAccount(a, NOW + 7 * 86_400_000);
     expect(fresh.score).toBeGreaterThan(later.score);
-    expect(fresh.status).toBe("warm");
+    expect(fresh.status).toBe("hot");
     expect(later.status).toBe("cooling");
+    expect(summariseAccount(a, NOW + 14 * 86_400_000).status).toBe("quiet");
   });
 
   it("marks hot only with a strong signal from the last three days", () => {
@@ -63,6 +64,8 @@ describe("scoring", () => {
     const s = summariseAccount(strong, NOW);
     expect(s.status).toBe("hot");
     expect(statusFor(90, false)).toBe("warm");
+    // a single new HR head appointed yesterday is hot on its own
+    expect(summariseAccount([art({ signal_type: "leadership_hire", strength: 5, published_at: daysAgo(1) })], NOW).status).toBe("hot");
     expect(scoreEvents([])).toBe(0);
   });
 });

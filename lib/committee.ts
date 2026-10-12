@@ -34,3 +34,15 @@ export const PERSONA_LABEL: Record<Persona, string> = {
   champion: "Champion",
   influencer: "Influencer",
 };
+
+const BUYER_ROLE = /\b(hr|human|people|chro|cpo|talent|operat|ops|coo|plant|warehous|hub|supply|workforce|facilit)/i;
+
+/** Who Arjun should approach: an HR/ops person named in the news, else his own CRM contact, else anyone named. */
+export function bestApproach(members: CommitteeMember[]): CommitteeMember | null {
+  return (
+    members.find((m) => m.source === "news" && BUYER_ROLE.test(m.title)) ??
+    members.find((m) => m.source === "crm") ??
+    members[0] ??
+    null
+  );
+}

@@ -6,6 +6,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { SignalStatus } from "@/lib/db";
+import { COOLING_AT, HOT_AT, WARM_AT } from "@/lib/scoring";
 import { STATUS } from "@/lib/ui";
 
 export interface Blip {
@@ -20,6 +21,16 @@ const SIZE = 360;
 const C = SIZE / 2;
 const R = C - 14;
 
+/** Radius fraction for a readiness score: 100 sits near the centre, 0 on the rim. */
+const radiusFor = (score: number) => 0.12 + 0.86 * (1 - Math.min(100, Math.max(0, score)) / 100);
+
+/** Rings drawn exactly at the status thresholds, so a blip inside the red ring is hot. */
+const RINGS = [
+  { at: HOT_AT, label: "HOT", color: "#ff5a36" },
+  { at: WARM_AT, label: "WARM", color: "#ffb020" },
+  { at: COOLING_AT, label: "COOLING", color: "#5b8def" },
+];
+
 /** Stable pseudo-random angle per account so blips don't jump around between renders. */
 function angleFor(id: string): number {
   let h = 2166136261;
@@ -32,9 +43,10 @@ export function Radar({ blips }: { blips: Blip[] }) {
   const points = useMemo(
     () =>
       blips.map((b) => {
-        const r = R * (0.12 + 0.86 * (1 - Math.min(100, b.score) / 100));
+        const r = R * radiusFor(b.score);
         const a = (angleFor(b.id) * Math.PI) / 180;
-        return { ...b, x: C + r * Math.cos(a), y: C + r * Math.sin(a) };
+        // Rounded so server and browser render identical numbers (avoids hydration mismatches).
+        return { ...b, x: Math.round((C + r * Math.cos(a)) * 100) / 100, y: Math.round((C + r * Math.sin(a)) * 100) / 100 };
       }),
     [blips],
   );
@@ -54,13 +66,16 @@ export function Radar({ blips }: { blips: Blip[] }) {
           </radialGradient>
         </defs>
         <circle cx={C} cy={C} r={R} fill="url(#rg)" stroke="#2a3542" />
-        {[0.25, 0.5, 0.75].map((f) => (
-          <circle key={f} cx={C} cy={C} r={R * f} fill="none" stroke="#1f2731" strokeDasharray="2 4" />
+        {RINGS.map((ring) => (
+          <circle key={ring.label} cx={C} cy={C} r={R * radiusFor(ring.at)} fill="none" stroke={ring.color} strokeOpacity="0.28" strokeDasharray="2 4" />
         ))}
         <line x1={C - R} y1={C} x2={C + R} y2={C} stroke="#1f2731" />
         <line x1={C} y1={C - R} x2={C} y2={C + R} stroke="#1f2731" />
-        <text x={C + 4} y={C - R * 0.25 + 12} className="fill-faint" fontSize="8" fontFamily="var(--font-geist-mono)">HOT</text>
-        <text x={C + 4} y={C - R * 0.75 + 12} className="fill-faint" fontSize="8" fontFamily="var(--font-geist-mono)">QUIET</text>
+        {RINGS.map((ring) => (
+          <text key={ring.label} x={C - 4} y={C + R * radiusFor(ring.at) - 4} textAnchor="end" fill={ring.color} fillOpacity="0.6" fontSize="7.5" letterSpacing="1" fontFamily="var(--font-geist-mono)">
+            {ring.label}
+          </text>
+        ))}
         {points.map((p) => {
           const s = STATUS[p.status];
           const big = p.status === "hot" || p.status === "warm";
