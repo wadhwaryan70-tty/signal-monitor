@@ -162,7 +162,12 @@ export default async function HowItWorks() {
 
         {/* Components Map */}
         <section className="mt-16">
-          <div className="label mb-4">Components map</div>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="label">Components map</div>
+            <a href="/components-map.html" target="_blank" className="text-[13px] text-mute transition hover:text-hot">
+              Open the full swimlane map (actor × stage) ↗
+            </a>
+          </div>
           <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
             {MAP.map((m, i) => (
               <div key={m.k} className="glass rise relative rounded-2xl p-5" style={{ animationDelay: `${i * 70}ms` }}>

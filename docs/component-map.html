@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Signal Monitor Components Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Swimlane map: one row per actor, one column per stage (Trigger → Output). */
+:root{
+  --bg:#FFFFFF; --ink:#16181D; --muted:#6B7280; --line:#E5E7EB; --head:#EEF0F3;
+  --violet:#6D5BD0; --violet-bg:#F7F6FD; --violet-card:#F3F1FD;
+  --blue:#2F7BD9;   --blue-bg:#F4F7FC;   --blue-card:#EEF5FD;
+  --orange:#E07A2F; --orange-bg:#FDF7F1; --orange-card:#FDF0E5;
+  --grey:#7C8493;   --grey-bg:#F6F7F9;   --grey-card:#F1F2F5;
+  --teal:#1A9C8C;   --teal-bg:#F2F9F8;   --teal-card:#E8F6F3;
+  --green:#3C9A52;  --green-bg:#F3F9F4;  --green-card:#EAF6ED;
+  --amber:#C99A1C;  --amber-bg:#FFFCF3;  --amber-card:#FFF7E0;
+  --red:#C2453A;    --red-bg:#FDF5F4;    --red-card:#FBEAE8;
+  --pink:#D14B82;   --pink-bg:#FDF5F8;   --pink-card:#FBEAF1;
+  --cyan:#1F8FB0;   --cyan-bg:#F2F8FB;   --cyan-card:#E6F3F8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Helvetica Neue",Arial,sans-serif;padding:28px 32px 32px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:6px}
+h1{font-family:"Bricolage Grotesque",Inter,sans-serif;font-size:27px;margin:0;letter-spacing:-.01em}
+.tag{font-size:12.5px;font-weight:600;color:var(--muted)}
+.sub{font-size:13px;color:var(--muted);margin:0 0 16px;max-width:110ch}
+.sub b{color:var(--ink)}
+.grid{display:grid;grid-template-columns:150px repeat(6,minmax(0,1fr));border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.h{background:var(--head);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#5B6270;text-align:center;padding:12px 6px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.h:nth-child(7){border-right:0}
+.cell{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 14px;min-height:118px;display:flex;align-items:center;justify-content:center}
+.cell:nth-child(7n){border-right:0}
+.actor{justify-content:flex-start;align-items:center;border-left:4px solid var(--c);padding-left:14px}
+.actor div{display:flex;flex-direction:column;gap:2px}
+.actor b{font-size:14.5px;line-height:1.2}
+.actor span{font-size:11.5px;color:var(--muted);line-height:1.3}
+.card{background:var(--card);border:1.5px solid var(--c);border-radius:8px;padding:10px 12px;text-align:center;width:100%}
+.card h3{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--c);line-height:1.3}
+.card p{margin:0;font-size:11.5px;line-height:1.55;color:#3F4550}
+.card code{font-size:10.5px}
+.card .x{display:inline-block;margin-top:6px;font-size:10.5px;font-weight:600;color:var(--red);background:var(--red-card);border-radius:4px;padding:2px 6px}
+.r-violet{--c:var(--violet);--card:var(--violet-card)} .r-violet.cell{background:var(--violet-bg)}
+.r-blue{--c:var(--blue);--card:var(--blue-card)}       .r-blue.cell{background:var(--blue-bg)}
+.r-orange{--c:var(--orange);--card:var(--orange-card)} .r-orange.cell{background:var(--orange-bg)}
+.r-grey{--c:var(--grey);--card:var(--grey-card)}       .r-grey.cell{background:var(--grey-bg)}
+.r-teal{--c:var(--teal);--card:var(--teal-card)}       .r-teal.cell{background:var(--teal-bg)}
+.r-green{--c:var(--green);--card:var(--green-card)}    .r-green.cell{background:var(--green-bg)}
+.r-amber{--c:var(--amber);--card:var(--amber-card)}    .r-amber.cell{background:var(--amber-bg)}
+.r-red{--c:var(--red);--card:var(--red-card)}          .r-red.cell{background:var(--red-bg)}
+.r-pink{--c:var(--pink);--card:var(--pink-card)}       .r-pink.cell{background:var(--pink-bg)}
+.r-cyan{--c:var(--cyan);--card:var(--cyan-card)}       .r-cyan.cell{background:var(--cyan-bg)}
+.card .ok{display:inline-block;margin-top:6px;font-size:10.5px;font-weight:600;color:var(--green);background:var(--green-card);border-radius:4px;padding:2px 6px}
+.foot{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.f{border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.5;color:#3F4550}
+.f b{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.f.cut b{color:var(--red)} .f.res b{color:var(--green)} .f.ext b{color:var(--muted)}
+@media (max-width:900px){body{padding:16px}.grid{overflow-x:auto;grid-template-columns:120px repeat(6,180px)}.foot{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top"><h1>Signal/Monitor · B2B Account Signal Monitor</h1><span class="tag">Components Map · Aryan Wadhwa · MESA Problem Statement 18</span></div>
+<p class="sub">Twice a week Arjun learns which of his accounts have a real trigger right now — and why. Live news is read by Gemini Flash, scored by code, written back to his Supabase CRM <b>without touching his own notes</b>, and emailed as a Hot List. <b>Live:</b> signal-monitor-two.vercel.app</p>
+
+<div class="grid">
+  <div class="h">Actor</div><div class="h">Trigger</div><div class="h">Input</div><div class="h">Context</div><div class="h">Processing</div><div class="h">AI</div><div class="h">Output</div>
+
+  <div class="cell actor r-violet"><div><b>Vercel Cron</b><span>Scheduler</span></div></div>
+  <div class="cell r-violet"><div class="card"><h3>Fires Mon &amp; Thu, 07:30 IST</h3><p><code>0 2 * * 1,4</code> calls the secret-protected scan; the same run builds and sends the Hot List</p></div></div>
+  <div class="cell r-violet"></div>  <div class="cell r-violet"></div>  <div class="cell r-violet"></div>  <div class="cell r-violet"></div>  <div class="cell r-violet"></div>
+
+  <div class="cell actor r-red"><div><b>Arjun</b><span>Sales rep · human</span></div></div>
+  <div class="cell r-red"><div class="card"><h3>Can hit “Scan now”</h3><p>signed in, any time between the two scheduled runs; viewing the radar needs no login</p></div></div>
+  <div class="cell r-red"></div>  <div class="cell r-red"></div>  <div class="cell r-red"></div>  <div class="cell r-red"></div>  <div class="cell r-red"><div class="card"><h3>Reads, decides, reaches out</h3><p>picks who to call from the Hot List and writes his own message. The system never contacts an account</p></div></div>
+
+
+  <div class="cell actor r-green"><div><b>Arjun's CRM</b><span>Supabase · accounts table</span></div></div>
+  <div class="cell r-green"></div>  <div class="cell r-green"><div class="card"><h3>His book of 20 accounts</h3><p>stage, frontline workforce, shift-based, sites, key contact and last-contact date</p></div></div>
+  <div class="cell r-green"><div class="card"><h3>His own judgment, read-only</h3><p>notes and his read on each relationship shape the angle's tone — never edited</p><span class="x">DB trigger blocks every system write here</span></div></div>
+  <div class="cell r-green"></div>  <div class="cell r-green"></div>  <div class="cell r-green"><div class="card"><h3>Signals written back</h3><p>only <code>sig_*</code> columns + a CRM alert feed: became hot, strong signal, new person named, went quiet</p><span class="ok">Arjun's fields fingerprinted: untouched ✓</span></div></div>
+
+
+  <div class="cell actor r-blue"><div><b>Google News RSS</b><span>External · live</span></div></div>
+  <div class="cell r-blue"></div>  <div class="cell r-blue"><div class="card"><h3>Live headlines for every account</h3><p>two searches each (name, and name + trigger words), India edition, last 14 days</p><span class="x">LinkedIn cut: no public API</span></div></div>
+  <div class="cell r-blue"></div>  <div class="cell r-blue"></div>  <div class="cell r-blue"></div>  <div class="cell r-blue"></div>
+
+  <div class="cell actor r-grey"><div><b>Trigger Rubric</b><span>product · 5 types · strength</span></div></div>
+  <div class="cell r-grey"></div>  <div class="cell r-grey"></div>  <div class="cell r-grey"><div class="card"><h3>Knows what counts as a trigger</h3><p>Arjun's product capabilities; new CHRO/ops leader, hiring &amp; expansion, funding, digitalisation, operational strain; 0–5 strength scale</p></div></div>
+  <div class="cell r-grey"></div>  <div class="cell r-grey"></div>  <div class="cell r-grey"></div>
+
+  <div class="cell actor r-orange"><div><b>Next.js API</b><span>Vercel function</span></div></div>
+  <div class="cell r-orange"></div>  <div class="cell r-orange"></div>  <div class="cell r-orange"></div>  <div class="cell r-orange"><div class="card"><h3>Cleans before the AI sees it</h3><p>drops links already read and near-duplicate headlines, so only new news goes to Gemini; one run at a time</p></div></div>
+  <div class="cell r-orange"></div>  <div class="cell r-orange"></div>
+
+  <div class="cell actor r-teal"><div><b>Gemini Flash</b><span>AI · one call per account</span></div></div>
+  <div class="cell r-teal"></div>  <div class="cell r-teal"></div>  <div class="cell r-teal"></div>  <div class="cell r-teal"></div>  <div class="cell r-teal"><div class="card"><h3>Classifies, names, drafts</h3><p>labels each headline (type, strength, same-event key) or rejects it as noise; names the buying committee; writes the one-line signal, why now and outreach angle</p><span class="x">drafts only, never sends</span></div></div>
+  <div class="cell r-teal"></div>
+
+  <div class="cell actor r-cyan"><div><b>Scoring Engine</b><span>Deterministic code</span></div></div>
+  <div class="cell r-cyan"></div>  <div class="cell r-cyan"></div>  <div class="cell r-cyan"></div>  <div class="cell r-cyan"><div class="card"><h3>Readiness × fit × timing</h3><p>same-event articles count once; readiness halves every 3 days so quiet accounts sink; fit from firmographics; eased if Arjun spoke to them days ago</p></div></div>
+  <div class="cell r-cyan"></div>  <div class="cell r-cyan"></div>
+
+  <div class="cell actor r-amber"><div><b>Hot List Email</b><span>Resend · Mon &amp; Thu</span></div></div>
+  <div class="cell r-amber"></div>  <div class="cell r-amber"></div>  <div class="cell r-amber"></div>  <div class="cell r-amber"></div>  <div class="cell r-amber"></div>  <div class="cell r-amber"><div class="card"><h3>Top 10 lands in his inbox</h3><p>accounts with a trigger in the last 3 days, by priority: one-line signal, why now, Gemini angle, who to approach, sources</p></div></div>
+
+
+  <div class="cell actor r-pink"><div><b>Dashboard</b><span>Vercel · live link</span></div></div>
+  <div class="cell r-pink"></div>  <div class="cell r-pink"></div>  <div class="cell r-pink"></div>  <div class="cell r-pink"></div>  <div class="cell r-pink"></div>  <div class="cell r-pink"><div class="card"><h3>The radar and the proof</h3><p>ranked book, account pages with the score maths, Arjun's notebook, run log, and a live overwrite test the DB refuses</p></div></div>
+
+</div>
+
+<div class="foot">
+  <div class="f cut"><b>The Cut</b>Arjun pictured signals from LinkedIn and a system that acts on them. Check 03: LinkedIn has no public feed, so news and press carry the same triggers. Check 06: an AI email to a new CHRO is too costly to get wrong, so the system drafts and Arjun sends.</div>
+  <div class="f res"><b>Tested live</b>20 accounts, 476 live headlines, 35 real triggers on the first scan (e.g. Apollo's new Head of HR, Zepto's IPO filing). Arjun's fields untouched on every run; the DB refused the overwrite test; Hot List delivered from production.</div>
+  <div class="f ext"><b>Next (not built)</b>Slack or HubSpot alerts change only the Output row; an official LinkedIn data partner would change only the Input row. Context to Processing is reused as is.</div>
+</div>
+</body>
+</html>

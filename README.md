@@ -28,6 +28,10 @@ into his Supabase CRM **without ever touching his own notes**, and emails him a 
 
 ## Components Map
 
+Full swimlane map (actor × stage): [`docs/component-map.html`](docs/component-map.html) · live at [/components-map.html](https://signal-monitor-two.vercel.app/components-map.html) · PNG/PDF in [`submission/`](submission/)
+
+![Components Map](submission/component-map.png)
+
 | | Component | What it is here |
 |---|---|---|
 | 1 | **Trigger** | Vercel Cron, **Mon & Thu 07:30 IST** (`0 2 * * 1,4` UTC) → `/api/cron` (secret-protected). Plus a manual “Scan now” for Arjun. |
