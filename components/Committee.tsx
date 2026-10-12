@@ -12,10 +12,10 @@ export function CommitteeChips({ members, max = 4 }: { members: CommitteeMember[
   return (
     <div className="flex flex-wrap gap-1.5">
       {members.slice(0, max).map((m) => (
-        <span key={`${m.source}-${m.name}-${m.title}`} className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] ${TONE[m.persona]}`} title={`${PERSONA_LABEL[m.persona]} · ${m.source === "news" ? "named in the news" : "from your CRM"}`}>
+        <span key={`${m.source}-${m.name}-${m.title}`} className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] ${TONE[m.persona]}`} title={`${PERSONA_LABEL[m.persona]} · ${m.source === "news" ? "named in the news" : "your contact"}`}>
           <span className="font-medium">{m.name}</span>
           <span className="text-text/60">{m.title}</span>
-          {m.source === "crm" && <span className="font-mono text-[9px] opacity-70">CRM</span>}
+          {m.source === "crm" && <span className="font-mono text-[9px] opacity-70">YOURS</span>}
         </span>
       ))}
     </div>
@@ -36,7 +36,7 @@ export function CommitteePanel({ members }: { members: CommitteeMember[] }) {
                   <div className="text-text">{m.name}</div>
                   <div className="text-[11.5px] text-mute">{m.title}</div>
                   <div className="text-[10.5px] text-faint">
-                    {m.source === "crm" ? "From your CRM" : m.url ? <a href={m.url} target="_blank" rel="noreferrer" className="hover:text-mute">Named in the news ↗</a> : "Named in the news"}
+                    {m.source === "crm" ? "Your contact" : m.url ? <a href={m.url} target="_blank" rel="noreferrer" className="hover:text-mute">Named in the news ↗</a> : "Named in the news"}
                   </div>
                 </li>
               ))}

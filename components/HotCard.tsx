@@ -5,7 +5,7 @@ import { ago, daysSince, fmtIST, sourceName } from "@/lib/ui";
 import { bestApproach } from "@/lib/committee";
 import { CommitteeChips } from "./Committee";
 import { CopyButton } from "./CopyButton";
-import { ArjunTag, ScoreRing, SignalChip, StatusPill, SystemTag } from "./ScoreRing";
+import { ArjunTag, ScoreRing, SignalChip, StatusPill } from "./ScoreRing";
 
 function approachLine(entry: HotListEntry) {
   const m = bestApproach(entry.committee);
@@ -41,11 +41,10 @@ export function HotCard({ entry, account, rank }: { entry: HotListEntry; account
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <SignalChip type={account?.sig_top_type ?? null} />
-              <SystemTag />
               {account?.sig_last_signal_at && <span className="text-[11px] text-faint">signal {ago(account.sig_last_signal_at)}</span>}
             </div>
             <div className="mt-2 flex flex-wrap gap-3 font-mono text-[11px] text-mute">
-              <span>readiness <b className="text-text">{entry.score}</b></span>
+              <span>signal <b className="text-text">{Math.round(entry.score)}</b></span>
               <span className="text-faint">·</span>
               <span>fit <b className="text-text">{entry.fit}</b></span>
               {lastContact !== null && lastContact <= 14 && <span className="text-faint">· spoke {lastContact}d ago</span>}
@@ -64,7 +63,7 @@ export function HotCard({ entry, account, rank }: { entry: HotListEntry; account
         {entry.outreach_angle && (
           <div className="relative mt-4 rounded-xl border border-hot/25 bg-gradient-to-br from-hot/[0.10] to-transparent p-4">
             <div className="mb-1.5 flex items-center justify-between">
-              <span className="label !text-hot">Outreach angle · drafted by Gemini</span>
+              <span className="label !text-hot">Suggested angle</span>
               <CopyButton text={entry.outreach_angle} />
             </div>
             <p className="text-[14px] leading-relaxed text-text/90">{entry.outreach_angle}</p>
@@ -96,7 +95,7 @@ export function HotCard({ entry, account, rank }: { entry: HotListEntry; account
       {/* Arjun's own view of the account, side by side with what the system found. */}
       <aside className="paper relative flex flex-col gap-3 p-5 pl-10 lg:border-l lg:border-black/10">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-paper-ink/60">Arjun&apos;s notebook</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-paper-ink/60">Your notebook</span>
           <ArjunTag dark />
         </div>
         <div>

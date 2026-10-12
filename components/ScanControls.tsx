@@ -1,18 +1,18 @@
 "use client";
 
-// Manual "run now" controls. A scan takes about a minute (live news for every account + Gemini),
-// so we show the pipeline stages while it runs, then refresh the page with the new data.
+// Manual "run now" controls. A scan takes about a minute, so we show progress while it runs,
+// then refresh the page with the new data.
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const STAGES = [
-  "Pulling live news for every account",
-  "Skipping headlines already seen",
-  "Gemini Flash classifying new headlines",
-  "Scoring and decaying every account",
-  "Writing signal columns only (your notes untouched)",
-  "Building the Hot List",
+  "Checking the latest news for every account",
+  "Skipping stories you've already seen",
+  "Picking out real buying triggers",
+  "Ranking your accounts",
+  "Updating your radar and alerts",
+  "Preparing your Hot List",
 ];
 
 interface Result {
@@ -108,15 +108,14 @@ export function ScanControls({ signedIn }: { signedIn: boolean }) {
         <div className="glass rise mt-3 rounded-lg p-3 text-[12px] text-mute">
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             <span><b className="text-text">{result.scanned}</b> accounts scanned</span>
-            <span><b className="text-text">{result.fetched}</b> live headlines</span>
-            <span><b className="text-text">{result.fresh}</b> new → Gemini</span>
-            <span><b className="text-text">{result.newSignals}</b> new signals</span>
+            <span><b className="text-text">{result.fresh}</b> new stories checked</span>
+            <span><b className="text-text">{result.newSignals}</b> new triggers</span>
             <span><b className="text-text">{result.hotList}</b> on the Hot List</span>
-            <span><b className="text-text">{result.alerts}</b> CRM alerts</span>
+            <span><b className="text-text">{result.alerts}</b> new alerts</span>
           </div>
           <div className="mt-1.5 flex flex-wrap gap-x-4">
             <span className={result.manualUntouched ? "text-good" : "text-hot"}>
-              {result.manualUntouched ? "✓ Your notes & contact records unchanged" : "✗ Arjun-owned fields changed during the run!"}
+              {result.manualUntouched ? "✓ Your notes and contact dates unchanged" : "✗ Your notes changed during the scan"}
             </span>
             {result.email.status !== "skipped" && (
               <span className={result.email.status === "sent" ? "text-good" : "text-hot"}>
@@ -124,7 +123,7 @@ export function ScanControls({ signedIn }: { signedIn: boolean }) {
               </span>
             )}
           </div>
-          {result.errors.length > 0 && <div className="mt-1.5 text-warm">{result.errors.length} warning(s): {result.errors.slice(0, 2).join("; ")}</div>}
+          {result.errors.length > 0 && <div className="mt-1.5 text-warm">{result.errors.length} account(s) couldn&apos;t be checked this time — they&apos;ll be retried on the next scan.</div>}
         </div>
       )}
       {error && <div className="mt-3 rounded-lg border border-hot/30 bg-hot/10 p-3 text-[12px] text-hot">{error}</div>}

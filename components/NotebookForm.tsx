@@ -41,10 +41,10 @@ export function NotebookForm({
     <div className="paper relative rounded-2xl p-6 pl-12">
       <div className="absolute -top-3 left-10 h-6 w-20 rotate-[-3deg] bg-[#e9dcb4]/80 shadow-sm" aria-hidden />
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-paper-ink/60">Arjun&apos;s notebook</span>
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-paper-ink/60">Your notebook</span>
         <ArjunTag dark />
       </div>
-      <p className="mt-1 text-[11.5px] text-paper-ink/55">Only you write here. The signal system is blocked from these fields by the database itself.</p>
+      <p className="mt-1 text-[11.5px] text-paper-ink/55">Only you write here. Signal Monitor reads your notes to tailor its suggestions but never changes them.</p>
 
       <label className="mt-5 block">
         <span className="font-mono text-[10px] uppercase tracking-wider text-paper-ink/50">Last contact</span>

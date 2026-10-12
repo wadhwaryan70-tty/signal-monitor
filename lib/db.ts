@@ -218,23 +218,6 @@ export async function insertAlerts(rows: Omit<Alert, "id" | "created_at">[]) {
   check(await db().from("alerts").insert(rows), "Save alerts");
 }
 
-/** Counts for the pipeline strip on the dashboard. */
-export async function pipelineStats(sinceIso: string) {
-  const head = { head: true, count: "exact" as const };
-  const [headlines, signals, people, alerts] = await Promise.all([
-    db().from("articles").select("id", head).gte("first_seen_at", sinceIso),
-    db().from("articles").select("id", head).gte("published_at", sinceIso).eq("about_company", true).neq("signal_type", "none"),
-    db().from("articles").select("id", head).eq("about_company", true).neq("people", "[]"),
-    db().from("alerts").select("id", head).gte("created_at", sinceIso),
-  ]);
-  return {
-    headlines: headlines.count ?? 0,
-    signals: signals.count ?? 0,
-    peopleMentions: people.count ?? 0,
-    alerts: alerts.count ?? 0,
-  };
-}
-
 export async function listRuns(limit = 10): Promise<Run[]> {
   return check(
     await db().from("runs").select("*").order("started_at", { ascending: false }).limit(limit),
@@ -333,11 +316,4 @@ export async function updateArjunFields(
     }),
     "Save your fields",
   );
-}
-
-export async function proveWriteGuard(accountId: string): Promise<{ blocked: boolean; message: string; code?: string }> {
-  return check(
-    await db().rpc("prove_write_guard", { p_account_id: accountId }),
-    "Run guard test",
-  ) as { blocked: boolean; message: string; code?: string };
 }

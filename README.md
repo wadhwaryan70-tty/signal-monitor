@@ -7,7 +7,7 @@ outreach with no trigger is noise, outreach two weeks after the trigger is too l
 for every account, uses **Gemini Flash** to find real trigger events, scores and decays them, writes the results back
 into his Supabase CRM **without ever touching his own notes**, and emails him a **Hot List every Monday and Thursday**.
 
-- **Live app:** https://signal-monitor-two.vercel.app  (How it works: [/how-it-works](https://signal-monitor-two.vercel.app/how-it-works) · Hot List email: [/hot-list](https://signal-monitor-two.vercel.app/hot-list))
+- **Live app:** https://signal-monitor-two.vercel.app  (Hot List: [/hot-list](https://signal-monitor-two.vercel.app/hot-list) · user guide: [/how-it-works](https://signal-monitor-two.vercel.app/how-it-works))
 - **Stack:** Next.js 16 on Vercel · Supabase (Postgres) · Gemini Flash · Google News RSS · Resend · Vercel Cron
 
 ---
@@ -28,7 +28,7 @@ into his Supabase CRM **without ever touching his own notes**, and emails him a 
 
 ## Components Map
 
-Full swimlane map (actor × stage): [`docs/component-map.html`](docs/component-map.html) · live at [/components-map.html](https://signal-monitor-two.vercel.app/components-map.html) · PNG/PDF in [`submission/`](submission/)
+Full swimlane map (actor × stage): [`docs/component-map.html`](docs/component-map.html) · PNG/PDF in [`submission/`](submission/)
 
 ![Components Map](submission/component-map.png)
 
@@ -75,7 +75,7 @@ This is **enforced by Postgres, not just the app** (`supabase/setup.sql`):
 3. Every scan fingerprints all Arjun-owned values before and after and records `manual_untouched` on the run.
 4. The reverse holds: Arjun's edits (`update_arjun_fields()`) and the Supabase table editor can't forge `sig_*` columns.
 
-The **How it works** page has a live button that makes the system attempt an overwrite and shows Postgres refusing it.
+The app itself shows Arjun only a product (radar, Hot List, accounts, a how-to guide) — none of this internal detail.
 
 ## The cuts — deliberately not built
 

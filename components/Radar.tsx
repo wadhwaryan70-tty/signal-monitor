@@ -52,6 +52,20 @@ export function Radar({ blips }: { blips: Blip[] }) {
   );
   const active = points.find((p) => p.id === hover);
 
+  // Labels: right of the dot by default; flip to the left when a nearby label would collide.
+  const labelLeft = useMemo(() => {
+    const placed: { x: number; y: number; left: boolean }[] = [];
+    const out = new Map<string, boolean>();
+    for (const p of [...points].filter((b) => b.status === "hot" || b.status === "warm").sort((a, b) => b.score - a.score)) {
+      const clash = (left: boolean) => placed.some((q) => Math.abs(q.y - p.y) < 13 && (left === q.left ? Math.abs(q.x - p.x) < 95 : left ? q.x < p.x && p.x - q.x < 95 : q.x > p.x && q.x - p.x < 95));
+      const left = p.x > C + R * 0.45 ? true : clash(false);
+      const final = clash(left) && !clash(!left) ? !left : left;
+      placed.push({ x: p.x, y: p.y, left: final });
+      out.set(p.id, final);
+    }
+    return out;
+  }, [points]);
+
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[360px]">
       <div className="absolute inset-[14px] overflow-hidden rounded-full">
@@ -94,7 +108,15 @@ export function Radar({ blips }: { blips: Blip[] }) {
                   style={{ filter: big ? `drop-shadow(0 0 6px ${s.color})` : undefined }}
                 />
                 {big && (
-                  <text x={p.x + 9} y={p.y + 3.5} fontSize="10" fill="#e8edf2" fontFamily="var(--font-geist-sans)" style={{ pointerEvents: "none" }}>
+                  <text
+                    x={labelLeft.get(p.id) ? p.x - 9 : p.x + 9}
+                    y={p.y + 3.5}
+                    textAnchor={labelLeft.get(p.id) ? "end" : "start"}
+                    fontSize="10"
+                    fill="#e8edf2"
+                    fontFamily="var(--font-geist-sans)"
+                    style={{ pointerEvents: "none" }}
+                  >
                     {p.name}
                   </text>
                 )}

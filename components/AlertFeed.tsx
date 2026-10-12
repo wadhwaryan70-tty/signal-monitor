@@ -12,10 +12,10 @@ const KIND = {
 
 export function AlertFeed({ alerts }: { alerts: (Alert & { company_name: string })[] }) {
   return (
-    <div className="glass flex h-full max-h-[420px] flex-col overflow-hidden rounded-2xl lg:max-h-none">
+    <div className="glass flex max-h-[340px] flex-col overflow-hidden rounded-2xl">
       <div className="flex items-center justify-between border-b border-line px-5 py-3">
-        <span className="label">CRM alert feed</span>
-        <span className="font-mono text-[10px] text-faint">written to Supabase · alerts table</span>
+        <span className="label">Alerts</span>
+        <span className="font-mono text-[10px] text-faint">what changed since recent scans</span>
       </div>
       {alerts.length ? (
         <ul className="min-h-0 flex-1 divide-y divide-line/70 overflow-y-auto [scrollbar-color:#2a3542_transparent] [scrollbar-width:thin]">
@@ -27,7 +27,7 @@ export function AlertFeed({ alerts }: { alerts: (Alert & { company_name: string 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 text-[10.5px]">
                     <span className={`font-mono uppercase tracking-wider ${k.tone}`}>{k.label}</span>
-                    <span className="text-faint">· {ago(a.created_at)} · priority {a.priority}</span>
+                    <span className="text-faint">· {ago(a.created_at)}</span>
                   </div>
                   <Link href={`/accounts/${a.account_id}`} className="mt-0.5 line-clamp-2 block text-[13px] text-text/90 transition hover:text-hot">
                     {a.message}

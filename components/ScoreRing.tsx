@@ -1,5 +1,5 @@
 import type { SignalStatus } from "@/lib/db";
-import { fmtScore, STATUS } from "@/lib/ui";
+import { STATUS } from "@/lib/ui";
 
 export function ScoreRing({ score, status, size = 56 }: { score: number; status: SignalStatus; size?: number }) {
   const r = size / 2 - 4;
@@ -21,7 +21,7 @@ export function ScoreRing({ score, status, size = 56 }: { score: number; status:
           style={{ filter: `drop-shadow(0 0 4px ${color}88)` }}
         />
       </svg>
-      <div className="absolute inset-0 grid place-items-center font-mono text-[13px] font-semibold text-text">{fmtScore(score)}</div>
+      <div className="absolute inset-0 grid place-items-center font-mono text-[13px] font-semibold text-text">{Math.round(score)}</div>
     </div>
   );
 }
@@ -52,26 +52,17 @@ export function SignalChip({ type }: { type: string | null }) {
   );
 }
 
-/** Small marker used on every system-written field. */
-export function SystemTag() {
-  return (
-    <span title="Written by the signal system" className="rounded border border-line-2 px-1 font-mono text-[9px] tracking-wider text-faint">
-      SYSTEM
-    </span>
-  );
-}
-
-/** Small marker used on every Arjun-owned field. */
+/** Marks the fields only Arjun edits. */
 export function ArjunTag({ dark = false }: { dark?: boolean }) {
   return (
     <span
-      title="Arjun's own field — the system never writes here (enforced by the database)"
+      title="Your own notes — only you can change these"
       className={`inline-flex items-center gap-1 rounded px-1 font-mono text-[9px] tracking-wider ${dark ? "bg-paper-ink/10 text-paper-ink/70" : "bg-paper/10 text-paper/80"}`}
     >
       <svg width="8" height="9" viewBox="0 0 8 9" fill="currentColor" aria-hidden>
         <path d="M2 4V2.6a2 2 0 1 1 4 0V4h.5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-5A.5.5 0 0 1 1 8.5v-4A.5.5 0 0 1 1.5 4H2Zm1 0h2V2.6a1 1 0 0 0-2 0V4Z" />
       </svg>
-      ARJUN
+      ONLY YOU
     </span>
   );
 }

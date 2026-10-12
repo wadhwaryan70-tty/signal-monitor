@@ -3,7 +3,7 @@ import { SignOutButton } from "./SignOutButton";
 
 const LINKS = [
   { href: "/", key: "radar", label: "Radar" },
-  { href: "/hot-list", key: "hotlist", label: "Hot List email" },
+  { href: "/hot-list", key: "hotlist", label: "Hot List" },
   { href: "/how-it-works", key: "how", label: "How it works" },
 ] as const;
 
