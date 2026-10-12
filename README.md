@@ -7,7 +7,7 @@ outreach with no trigger is noise, outreach two weeks after the trigger is too l
 for every account, uses **Gemini Flash** to find real trigger events, scores and decays them, writes the results back
 into his Supabase CRM **without ever touching his own notes**, and emails him a **Hot List every Monday and Thursday**.
 
-- **Live app:** _added after deploy_
+- **Live app:** https://signal-monitor-two.vercel.app  (How it works: [/how-it-works](https://signal-monitor-two.vercel.app/how-it-works) · Hot List email: [/hot-list](https://signal-monitor-two.vercel.app/hot-list))
 - **Stack:** Next.js 16 on Vercel · Supabase (Postgres) · Gemini Flash · Google News RSS · Resend · Vercel Cron
 
 ---
