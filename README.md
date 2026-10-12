@@ -12,6 +12,20 @@ into his Supabase CRM **without ever touching his own notes**, and emails him a 
 
 ---
 
+## The Nine Checks — does this deserve to be built?
+
+| Group | Check | Verdict | Why |
+|---|---|---|---|
+| ⚡ Kill switches *(any No → don't build)* | 01 Problem real? | **Yes** | Timing decides deals: no trigger = noise, two weeks late = too late; signals are scattered across dozens of sources daily. |
+| | 02 Workflow repeated? | **Yes** | Same scan, every account, Mon & Thu, forever (Vercel Cron). |
+| | 03 Input available? | **Partly → Cut** | News/press (Google News RSS) and the CRM (Supabase): yes. LinkedIn posts: no public API → **cut**. |
+| 📊 Sizing *(any No → build smaller)* | 04 Output valuable? | **Yes** | A ranked decision — who, what changed, why now, angle, who to approach — not a news feed. |
+| | 05 Impact measurable? | **Yes** | Trigger-to-contact lag (`sig_last_signal_at` vs `last_contact_date`), reply/meeting rate on Hot List accounts, signals per run (run log). |
+| | 08 ROI worth it? | **Yes** | Free tiers throughout; ~20 Gemini Flash calls per scan, only for new headlines. Sized down: headlines only, 2 scans a week. |
+| 🚧 Boundary *(any No → put a human exactly here)* | 06 Failure risk OK? | **No for sending → human here** | A misread headline is cheap (sources shown); an AI email to a new CHRO is not. The system drafts, **Arjun sends**. |
+| | 07 Judgment protected? | **Yes** | Arjun's notes, contact dates and relationship read are DB-protected from every system write. |
+| | 09 Owner clear? | **Yes** | Arjun owns the account list, his columns and every outreach decision; the system owns only `sig_*`, alerts and the Hot List. |
+
 ## Components Map
 
 | | Component | What it is here |

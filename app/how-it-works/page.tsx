@@ -1,6 +1,8 @@
 import { GuardTest } from "@/components/GuardTest";
 import { Nav } from "@/components/Nav";
-import { listRuns, type Run } from "@/lib/db";
+import { NineChecks } from "@/components/NineChecks";
+import { listAccounts, listRuns, type Account, type Run } from "@/lib/db";
+import { buildHotList } from "@/lib/pipeline";
 import { COOLING_AT, HALF_LIFE_DAYS, HOT_AT, TYPE_WEIGHT, WARM_AT } from "@/lib/scoring";
 import { SIGNAL_LABEL } from "@/lib/product";
 import { isSignedIn } from "@/lib/session";
@@ -109,7 +111,12 @@ function RunRow({ r }: { r: Run }) {
 
 export default async function HowItWorks() {
   const signedIn = await isSignedIn();
-  const runs = await listRuns(12).catch(() => [] as Run[]);
+  const [runs, accounts, hot] = await Promise.all([
+    listRuns(12).catch(() => [] as Run[]),
+    listAccounts().catch(() => [] as Account[]),
+    buildHotList().catch(() => []),
+  ]);
+  const live = { total: accounts.length, fresh: hot.length, quiet: accounts.filter((a) => a.sig_status === "quiet").length };
   return (
     <>
       <Nav active="how" signedIn={signedIn} />
@@ -119,8 +126,22 @@ export default async function HowItWorks() {
           Timing is the product. <span className="italic text-mute">Here is how the system finds the moment.</span>
         </h1>
 
-        {/* Four stages */}
+        {/* Nine Checks */}
         <section className="mt-12">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <div className="label">The Nine Checks</div>
+              <h2 className="mt-1 font-serif text-[34px] leading-none text-text">Does this deserve to be built?</h2>
+            </div>
+            <p className="max-w-md text-[12.5px] text-faint">
+              Seven clean yeses. Check 03 cut LinkedIn; check 06 put Arjun — not the AI — in charge of every message that goes to an account.
+            </p>
+          </div>
+          <NineChecks live={live} />
+        </section>
+
+        {/* Four stages */}
+        <section className="mt-16">
           <div className="label mb-4">The four stages</div>
           <div className="grid gap-3 md:grid-cols-2">
             {STAGES.map((st) => (
